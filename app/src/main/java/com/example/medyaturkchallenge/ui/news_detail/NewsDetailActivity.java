@@ -192,6 +192,15 @@ public class NewsDetailActivity extends BaseActivity implements NewsDetailNaviga
          closeFullscreenDialog();
    }
 
+   @Override
+   protected void onDestroy() {
+      super.onDestroy();
+      if (player !=null){
+         player.release();
+         player = null;
+      }
+   }
+
    /**
     * Canlı yayın oynatıcını kapat
     */
