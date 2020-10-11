@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="newsDetailNavigator"
+            type="com.example.medyaturkchallenge.ui.news_detail.NewsDetailNavigator" />
+
+        <variable
+            name="itemList"
+            type="com.example.medyaturkchallenge.data.remote.models.ItemListDetail" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="30dp"
+        android:background="@color/default_bg"
+        tools:ignore="ContentDescription">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/nonCardView"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <FrameLayout
+                android:id="@+id/frameLayoutDetail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivItemList"
+                    swipeUrl="@{itemList.imageUrl}"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="@{() -> itemList.itemType.equals(`VIDEO`) ? newsDetailNavigator.onVideoWidgetOpen(itemList.videoUrl) : null}"
+                    android:scaleType="fitXY"
+                    tools:src="@drawable/image_error" />
+
+                <ImageView
+                    android:id="@+id/playButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_play_circle_outline"
+                    android:visibility="@{itemList.itemType.toString().equals(`VIDEO`) ? View.VISIBLE : View.GONE}" />
+
+            </FrameLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:text="@{itemList.title}"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:visibility="@{itemList.titleVisible ? View.VISIBLE : View.GONE}"
+            app:layout_constraintEnd_toEndOf="@id/nonCardView"
+            app:layout_constraintStart_toStartOf="@id/nonCardView"
+            app:layout_constraintTop_toBottomOf="@id/nonCardView"
+            tools:text="THY yolcular�n� �in'in 2 bin y�ll�k tarihi olan Xian �ehrine ta��maya ba�layacak" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

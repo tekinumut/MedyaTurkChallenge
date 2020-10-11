@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="itemList"
+            type="com.example.medyaturkchallenge.data.remote.models.ItemList" />
+
+        <variable
+            name="MainNavigator"
+            type="com.example.medyaturkchallenge.ui.main.MainNavigator" />
+
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="15dp"
+        android:onClick="@{() -> MainNavigator.onOpenNewsClick(itemList.fullPath)}"
+        app:cardBackgroundColor="@color/default_widget_bg"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imageSwipe"
+                swipeUrl="@{itemList.imageUrl}"
+                android:layout_width="0dp"
+                android:layout_height="175dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription"
+                tools:src="@drawable/swipedefpic" />
+
+            <TextView
+                android:id="@+id/titleSwipe"
+                style="@style/TitleStyle"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:gravity="center"
+                android:text="@{itemList.title}"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:visibility="@{itemList.titleVisible ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imageSwipe"
+                tools:text="27 May�s��lar darbe i�in �zel hutbe okutmu�lar" />
+
+            <Button
+                android:id="@+id/categorySwipe"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/rounded_corner_primary"
+                android:text="@{itemList.category.title}"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/titleSwipe"
+                tools:text="Güncel" />
+
+            <TextView
+                android:id="@+id/publishDateSwipe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="@{itemList.publishDate}"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@id/categorySwipe"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias=".999"
+                app:layout_constraintStart_toEndOf="@id/categorySwipe"
+                app:layout_constraintTop_toTopOf="@id/categorySwipe"
+                tools:text="27.05.2020 11:02:30" />
+
+            <TextView
+                android:id="@+id/shortTextSwipe"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="@{itemList.shortText}"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/categorySwipe"
+                tools:text="27 May�s��lar�n pulla, sigarayla, plakla me�rula�t�rmaya �al��t��� darbeyi, m�ft�l�klerden �darbenin faziletlerinin� halka �yet ve hadislerle anlat�lmas�n� isteyerek dini nas�l istismar ettikleri ortaya ��kt�."
+                tools:visibility="visible" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</layout>
