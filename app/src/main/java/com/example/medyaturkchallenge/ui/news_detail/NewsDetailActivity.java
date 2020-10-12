@@ -1,6 +1,7 @@
 package com.example.medyaturkchallenge.ui.news_detail;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.medyaturkchallenge.R;
 import com.example.medyaturkchallenge.base.BaseActivity;
 import com.example.medyaturkchallenge.databinding.ActivityNewsDetailBinding;
+import com.example.medyaturkchallenge.ui.main.AudioPlayerService;
 import com.example.medyaturkchallenge.ui.news_detail.adapter.DetailItemListAdapter;
 import com.example.medyaturkchallenge.utils.Utils;
 import com.google.android.exoplayer2.MediaItem;
@@ -160,7 +162,7 @@ public class NewsDetailActivity extends BaseActivity implements NewsDetailNaviga
 
    @Override
    public void onVideoWidgetOpen(String url) {
-
+      stopService(new Intent(this, AudioPlayerService.class));
       Log.e("onvideoOpen", "url: " + url);
       player = new SimpleExoPlayer.Builder(this).build();
       playerView.setPlayer(player);

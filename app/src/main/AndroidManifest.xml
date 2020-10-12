@@ -4,6 +4,7 @@
     package="com.example.medyaturkchallenge">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:allowBackup="false"
@@ -28,6 +29,7 @@
             android:name=".ui.main.MainActivity"
             android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation|screenSize" />
+        <service android:name=".ui.main.AudioPlayerService"/>
     </application>
 
 </manifest>

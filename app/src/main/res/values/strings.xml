@@ -3,6 +3,8 @@
 
     <string name="live">CANLI</string>
     <string name="today_news">Günün Manşetleri</string>
-    <string name="channel_desc">Canlı Yayın</string>
-    <string name="channel_name">Kanal 24</string>
+    <string name="playback_channel_name">Kanal 24</string>
+    <string name="playback_channel_desc">Desc</string>
+    <string name="def_playback_title">Canlı Yayın</string>
+    <string name="splash_text_under_logo">Doğrunun Adresi</string>
 </resources>

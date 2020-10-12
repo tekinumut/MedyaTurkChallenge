@@ -1,9 +1,13 @@
 package com.example.medyaturkchallenge.ui.main;
 
 import android.app.Dialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -21,19 +25,13 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.medyaturkchallenge.R;
 import com.example.medyaturkchallenge.base.BaseActivity;
 import com.example.medyaturkchallenge.data.remote.models.DataMainPage;
-import com.example.medyaturkchallenge.data.remote.services.ApiInterface;
 import com.example.medyaturkchallenge.databinding.ActivityMainBinding;
 import com.example.medyaturkchallenge.ui.main.adapter.NewsRecyclerAdapter;
 import com.example.medyaturkchallenge.ui.main.adapter.SwipePagerAdapter;
 import com.example.medyaturkchallenge.ui.news_detail.NewsDetailActivity;
 import com.example.medyaturkchallenge.utils.Constants;
 import com.example.medyaturkchallenge.utils.Utils;
-import com.google.android.exoplayer2.DefaultControlDispatcher;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.util.Util;
 
 import static androidx.viewpager2.widget.ViewPager2.ORIENTATION_HORIZONTAL;
 
@@ -46,17 +44,12 @@ public class MainActivity extends BaseActivity implements MainNavigator {
     private RecyclerView recyclerViewNews;
     // Video'nun oynatılacağı widget nesnesi
     private PlayerView playerView;
-    // exoPlayer nesnesi tanımlanıyor.
-    private SimpleExoPlayer player;
-    // Player'ın son çalışma durumu. Video oynatılıyor veya duraklatıldı.
-    private boolean playWhenReady = true;
-    private int currentWindow = 0;
-    private long playbackPosition = 0;
     // Player tam ekran açık olup olmama durumu
     private boolean mExoPlayerFullscreen = false;
     // Player'ın tam ekran açılacağı dialog
     private Dialog mFullScreenDialog;
-    // Player'ın Bildirim alanında çıkmasını sağlayan sınıf
+    // Arkaplanda canlı yayını oynatan bound service
+    private AudioPlayerService audioPlayerService = null;
 
 
     @Override
@@ -85,57 +78,10 @@ public class MainActivity extends BaseActivity implements MainNavigator {
         recyclerViewNews.setHasFixedSize(true);
 
         playerView = findViewById(R.id.playerView);
+        playerView.showController();
         mFullScreenIcon = playerView.findViewById(R.id.exo_fullscreen_icon);
 
         initFullscreenDialog();
-    }
-
-    /**
-     * Canlı yayın oynatıcını tanımla
-     */
-    private void initializePlayer() {
-        player = new SimpleExoPlayer.Builder(this).build();
-        playerView.setPlayer(player);
-        // Oynatılacak bağlatıyı tanıt
-        MediaItem mediaItem = MediaItem.fromUri(ApiInterface.Channel24LiveURL);
-        player.setMediaItem(mediaItem);
-
-        player.setPlayWhenReady(playWhenReady);
-        player.seekTo(currentWindow, playbackPosition);
-        player.prepare();
-        playerNotificationManager.setPlayer(player);
-
-        // Player çalışma durumları
-        playerView.setControlDispatcher(new DefaultControlDispatcher() {
-            @Override
-            public boolean dispatchSetPlayWhenReady(Player player, boolean playWhenReady) {
-                // Eğer player kapanmış ise (internet kopması gibi)
-                // Duraklat-Başlat butonuna player'ı sıfırlama yetkisi veriyoruz.
-                if (player.getPlaybackState() == Player.STATE_IDLE ||
-                        player.getPlaybackState() == Player.STATE_ENDED) {
-                    releasePlayer();
-                    initializePlayer();
-                }
-
-                return super.dispatchSetPlayWhenReady(player, playWhenReady);
-            }
-        });
-    }
-
-    /**
-     * Canlı yayın oynatıcını kapat
-     */
-    private void releasePlayer() {
-        if (player != null) {
-            playWhenReady = player.getPlayWhenReady();
-            playbackPosition = player.getCurrentPosition();
-            currentWindow = player.getCurrentWindowIndex();
-            player.release();
-            player = null;
-        }
-        if (playerNotificationManager != null) {
-            playerNotificationManager.setPlayer(null);
-        }
     }
 
     /**
@@ -250,23 +196,27 @@ public class MainActivity extends BaseActivity implements MainNavigator {
     }
 
     /**
-     * Player'ı duraklat veya başlat
-     *
-     * @param playWhenReady başlatma veya duraklatma seçimi
-     *                      true ->  başlat
-     *                      false -> durdur
+     * Servisten gelen bağlantıyı okur
      */
-    private void startOrStopPlayer(boolean playWhenReady) {
-        player.setPlayWhenReady(playWhenReady);
-    }
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder iBinder) {
+            AudioPlayerService.AudioServiceBinder binder = (AudioPlayerService.AudioServiceBinder) iBinder;
+            audioPlayerService = binder.getService();
+            playerView.setPlayer(binder.getPlayer());
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            audioPlayerService = null;
+        }
+    };
 
     /**
      * Player güncel yayına geçer
      */
     private void jumpLiveStream() {
-        MediaItem mediaItem = MediaItem.fromUri(ApiInterface.Channel24LiveURL);
-        player.setMediaItem(mediaItem);
-        startOrStopPlayer(true);
+        audioPlayerService.jumpLiveStream();
     }
 
     /**
@@ -275,15 +225,7 @@ public class MainActivity extends BaseActivity implements MainNavigator {
      * @param view ses butonu view nesnesi
      */
     public void onBtnVolumeClick(View view) {
-        ImageView btnVolume = (ImageView) view;
-        // Oynatıcının sesi açıksa kapatıyoruz
-        if (player.getVolume() == 1.0f) {
-            player.setVolume(0.0f);
-            btnVolume.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_volume_off));
-        } else if (player.getVolume() == 0.0f) {
-            player.setVolume(1.0f);
-            btnVolume.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_volume_up));
-        }
+        audioPlayerService.changePlayerVolume((ImageView) view);
     }
 
     /**
@@ -307,30 +249,48 @@ public class MainActivity extends BaseActivity implements MainNavigator {
         jumpLiveStream();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (Util.SDK_INT >= 24) {
-            if (player == null) {
-                initializePlayer();
-            }
+    private void bindService() {
+        if (audioPlayerService == null) {
+            Intent serviceIntent = new Intent(this, AudioPlayerService.class);
+            bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if ((Util.SDK_INT < 24 || player == null)) {
-            if (player == null) {
-                initializePlayer();
-            }
+    private void unbindAudioService() {
+        if (audioPlayerService != null) {
+            unbindService(mConnection);
+            audioPlayerService = null;
         }
+    }
+
+    private void startAudioService() {
+        Intent serviceIntent = new Intent(this, AudioPlayerService.class);
+        ContextCompat.startForegroundService(this, serviceIntent);
+        bindService();
+    }
+
+    private void stopAudioService() {
+        unbindAudioService();
+        stopService(new Intent(this, AudioPlayerService.class));
+        audioPlayerService = null;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startAudioService();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindAudioService();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        releasePlayer();
+        stopAudioService();
     }
 
 }
